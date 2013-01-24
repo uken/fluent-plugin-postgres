@@ -22,7 +22,7 @@ unless ENV.has_key?('VERBOSE')
   $log = nulllogger
 end
 
-require 'fluent/plugin/out_mysql'
+require 'fluent/plugin/out_postgres'
 
 class Test::Unit::TestCase
 end

@@ -1,9 +1,9 @@
-class Fluent::MysqlOutput < Fluent::BufferedOutput
-  Fluent::Plugin.register_output('mysql', self)
+class Fluent::PostgresOutput < Fluent::BufferedOutput
+  Fluent::Plugin.register_output('postgres', self)
 
   include Fluent::SetTimeKeyMixin
   include Fluent::SetTagKeyMixin
-  
+
   config_param :host, :string
   config_param :port, :integer, :default => nil
   config_param :database, :string
@@ -21,13 +21,12 @@ class Fluent::MysqlOutput < Fluent::BufferedOutput
 
   def initialize
     super
-    require 'mysql2-cs-bind'
+    require 'pg'
   end
 
+  # We don't currently support mysql's analogous json format
   def configure(conf)
     super
-
-    # TODO tag_mapped
 
     if @format == 'json'
       @format_proc = Proc.new{|tag, time, record| record.to_json}
@@ -41,28 +40,6 @@ class Fluent::MysqlOutput < Fluent::BufferedOutput
     end
     if @columns and @sql
       raise Fluent::ConfigError, "both of columns and sql are specified, but specify one of them"
-    end
-
-    if @sql
-      begin
-        if @format == 'json'
-          Mysql2::Client.pseudo_bind(@sql, [nil])
-        else
-          Mysql2::Client.pseudo_bind(@sql, @key_names.map{|n| nil})
-        end
-      rescue ArgumentError => e
-        raise Fluent::ConfigError, "mismatch between sql placeholders and key_names"
-      end
-    else # columns
-      raise Fluent::ConfigError, "table missing" unless @table
-      @columns = @columns.split(',')
-      cols = @columns.join(',')
-      placeholders = if @format == 'json'
-                       '?'
-                     else
-                       @key_names.map{|k| '?'}.join(',')
-                     end
-      @sql = "INSERT INTO #{@table} (#{cols}) VALUES (#{placeholders})"
     end
   end
 
@@ -79,17 +56,18 @@ class Fluent::MysqlOutput < Fluent::BufferedOutput
   end
 
   def client
-    Mysql2::Client.new({
-        :host => @host, :port => @port,
-        :username => @username, :password => @password,
-        :database => @database
-      })
+    PG::Connection.new({
+      :host => @host, :port => @port,
+      :user => @username, :password => @password,
+      :dbname => @database
+    })
   end
 
   def write(chunk)
     handler = self.client
+    handler.prepare("write", @sql)
     chunk.msgpack_each { |tag, time, data|
-      handler.xquery(@sql, data)
+      handler.exec_prepared("write", data)
     }
     handler.close
   end

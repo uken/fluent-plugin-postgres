@@ -1,10 +1,35 @@
-# fluent-plugin-mysql
+# fluent-plugin-postgres
+
+
+## Changes from mysql:
+
+- We currently don't suppor json format
+- You need to specify a SQL query
+- Placeholders are numbered (yeah, I know).
+
+Other than that, just bear in mind that it's Postgres SQL.
+
+### Quick example
+
+    <match output.by.sql.*>
+      type postgres
+      host master.db.service.local
+      # port 3306 # default
+      database application_logs
+      username myuser
+      password mypass
+      key_names status,bytes,vhost,path,rhost,agent,referer
+      sql INSERT INTO accesslog (status,bytes,vhost,path,rhost,agent,referer) VALUES ($1,$2,$3,$4,$5,$6,$7)
+      flush_intervals 5s
+    </match>
+
+
 
 ## Component
 
-### MysqlOutput
+### PostgresOutput
 
-Plugin to store mysql tables over SQL, to each columns per values, or to single column as json.
+Plugin to store Postgres tables over SQL, to each columns per values, or to single column as json.
 
 ## Configuration
 
