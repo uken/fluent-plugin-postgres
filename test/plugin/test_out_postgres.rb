@@ -72,7 +72,7 @@ sql INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)
     ]
     assert_equal 'INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)', d.instance.sql
 
-    time = Time.parse('2012-12-17 01:23:45 UTC').to_i
+    time = Time.utc(2012,12,17,1,23,45).to_i
     record = {'field1'=>'value1','field2'=>'value2','field3'=>'value3','field4'=>'value4'}
     d.emit(record, time)
     d.expect_format ['test', time, ['2012-12-17T01:23:45Z','test','value1','value2','value3','value4']].to_msgpack
@@ -97,7 +97,7 @@ sql INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)
     ]
     assert_equal 'INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)', d.instance.sql
 
-    time = Time.parse('2012-12-17 09:23:45 JST').to_i # JST(+0900)
+    time = Time.new(2012,12,17,9,23,45,'+09:00').to_i
     record = {'field1'=>'value1','field2'=>'value2','field3'=>'value3','field4'=>'value4'}
     d.emit(record, time)
     d.expect_format ['test', time, ['20121217-002345','test','value1','value2','value3','value4']].to_msgpack
