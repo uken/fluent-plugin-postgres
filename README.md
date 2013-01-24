@@ -48,7 +48,7 @@ MysqlOutput needs MySQL server's host/port/database/username/password, and INSER
       sql INSERT INTO accesslog (status,bytes,vhost,path,rhost,agent,referer) VALUES (?,?,?,?,?,?,?)
       flush_intervals 5s
     </match>
-    
+
     <match output.by.names.*>
       type mysql
       host master.db.service.local
@@ -83,17 +83,17 @@ To include time/tag into output, use `include_time_key` and `include_tag_key`, l
       database anydatabase
       username yourusername
       password secret
-      
+
       include_time_key yes
       ### default `time_format` is ISO-8601
       # time_format %Y%m%d-%H%M%S
       ### default `time_key` is 'time'
       # time_key timekey
-      
+
       include_tag_key yes
       ### default `tag_key` is 'tag'
       # tag_key tagkey
-      
+
       table anydata
       key_names time,tag,field1,field2,field3,field4
       sql INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)
@@ -106,12 +106,12 @@ Or, for json:
       host database.local
       database foo
       username root
-      
+
       include_time_key yes
       utc   # with UTC timezome output (default: localtime)
       time_format %Y%m%d-%H%M%S
       time_key timeattr
-      
+
       include_tag_key yes
       tag_key tagattr
       table accesslog
@@ -128,6 +128,6 @@ Or, for json:
 ## Copyright
 
 * Copyright
-  * Copyright(C) 2012- TAGOMORI Satoshi (tagomoris)
+  * Copyright 2013 Uken Games
 * License
   * Apache License, Version 2.0
