@@ -1,21 +1,21 @@
 # -*- encoding: utf-8 -*-
-Gem::Specification.new do |gem|
-  gem.name          = 'fluent-plugin-postgres'
-  gem.version       = '0.0.1'
-  gem.authors       = ['TAGOMORI Satoshi', 'Diogo Terror']
-  gem.email         = ['team@uken.com']
-  gem.description   = %q{fluent plugin to insert on PostgreSQL}
-  gem.summary       = %q{fluent plugin to insert on PostgreSQL}
-  gem.homepage      = 'https://github.com/uken/fluent-plugin-postgres'
-  gem.license       = 'Apache 2.0'
+Gem::Specification.new do |s|
+  s.name          = 'fluent-plugin-postgres'
+  s.version       = '0.0.1'
+  s.authors       = ['TAGOMORI Satoshi', 'Diogo Terror', 'pitr']
+  s.email         = ['team@uken.com']
+  s.description   = %q{fluent plugin to insert on PostgreSQL}
+  s.summary       = %q{fluent plugin to insert on PostgreSQL}
+  s.homepage      = 'https://github.com/uken/fluent-plugin-postgres'
+  s.license       = 'Apache 2.0'
 
-  gem.files         = `git ls-files`.split($\)
-  gem.executables   = gem.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
-  gem.test_files    = gem.files.grep(%r{^(test|spec|features)/})
-  gem.require_paths = ['lib']
+  s.files         = `git ls-files`.split($\)
+  s.executables   = s.files.grep(%r{^bin/}).map{ |f| File.basename(f) }
+  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
+  s.require_paths = ['lib']
 
-  gem.add_dependency 'fluentd'
-  gem.add_dependency 'pg'
+  s.add_dependency 'fluentd'
+  s.add_dependency 'pg'
 
-  gem.add_development_dependency 'rake'
+  s.add_development_dependency 'rake'
 end
