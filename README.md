@@ -1,4 +1,4 @@
-# fluent-plugin-postgres
+# fluent-plugin-postgres, a plugin for [Fluentd](http://fluentd.org)
 
 
 ## Changes from mysql:
