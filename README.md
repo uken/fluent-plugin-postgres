@@ -1,5 +1,11 @@
 # fluent-plugin-postgres, a plugin for [Fluentd](http://fluentd.org)
 
+## Installation:
+
+- Prereq: Install postgresql headers: `apt-get install libpq-dev`
+- Install the gem:
+  - `gem install fluent-plugin-postgres` or
+  - `/usr/lib/fluent/ruby/bin/fluent-gem install fluent-plugin-postgres`
 
 ## Changes from mysql:
 
