@@ -56,6 +56,7 @@ class Fluent::PostgresOutput < Fluent::BufferedOutput
   end
 
   def client
+    log.debug "Connecting to #{@database} at #{@host}:#{@port}"
     PG::Connection.new({
       :host => @host, :port => @port,
       :user => @username, :password => @password,
@@ -64,11 +65,25 @@ class Fluent::PostgresOutput < Fluent::BufferedOutput
   end
 
   def write(chunk)
-    handler = self.client
-    handler.prepare("write", @sql)
-    chunk.msgpack_each { |tag, time, data|
-      handler.exec_prepared("write", data)
-    }
-    handler.close
+    handler = nil
+    begin
+      handler = self.client
+      log.debug "SQL: #{@sql}"
+      handler.prepare("write", @sql)
+      chunk.msgpack_each { |tag, time, data|
+        log.debug "Data: #{data}"
+        handler.exec_prepared("write", data)
+      }
+    rescue Exception => e
+      log.warn "Failed to insert row: #{e}"
+      raise e
+    ensure
+      close_connection(handler)
+    end
+  end
+
+  def close_connection(handler)
+    log.debug "Closing connection #{handler}"
+    handler && handler.close
   end
 end
