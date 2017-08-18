@@ -14,7 +14,7 @@ Gem::Specification.new do |s|
   s.test_files    = s.files.grep(%r{^(test|spec|features)/})
   s.require_paths = ['lib']
 
-  s.add_dependency 'fluentd'
+  s.add_dependency 'fluentd', ['>= 0.14.15', '< 2']
   s.add_dependency 'pg'
 
   s.add_development_dependency 'rake'
