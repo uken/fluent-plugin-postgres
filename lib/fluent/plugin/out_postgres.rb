@@ -1,4 +1,5 @@
 require 'fluent/plugin/output'
+require 'pg'
 
 class Fluent::Plugin::PostgresOutput < Fluent::Plugin::Output
   Fluent::Plugin.register_output('postgres', self)
@@ -22,7 +23,6 @@ class Fluent::Plugin::PostgresOutput < Fluent::Plugin::Output
 
   def initialize
     super
-    require 'pg'
   end
 
   # We don't currently support mysql's analogous json format
