@@ -15,8 +15,8 @@ key_names field1,field2,field3
 sql INSERT INTO baz (col1,col2,col3,col4) VALUES (?,?,?,?)
   ]
 
-  def create_driver(conf=CONFIG, tag='test')
-    d = Fluent::Test::BufferedOutputTestDriver.new(Fluent::PostgresOutput, tag).configure(conf)
+  def create_driver(conf=CONFIG)
+    d = Fluent::Test::Driver::Output.new(Fluent::Plugin::PostgresOutput).configure(conf)
     d.instance.instance_eval {
       def client
         obj = Object.new
@@ -85,11 +85,12 @@ sql INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)
     ]
     assert_equal 'INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)', d.instance.sql
 
-    time = Time.utc(2012,12,17,1,23,45).to_i
+    time = event_time('2012-12-17 01:23:45 UTC')
     record = {'field1'=>'value1','field2'=>'value2','field3'=>'value3','field4'=>'value4'}
-    d.emit(record, time)
-    d.expect_format ['test', time, ['2012-12-17T01:23:45Z','test','value1','value2','value3','value4']].to_msgpack
-    d.run
+    d.run(default_tag: 'test') do
+      d.feed(time, record)
+    end
+    assert_equal ['test', time, ['2012-12-17T01:23:45Z','test','value1','value2','value3','value4']].to_msgpack, d.formatted[0]
   end
 
   def test_time_and_tag_key_complex
@@ -110,11 +111,11 @@ sql INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)
     ]
     assert_equal 'INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)', d.instance.sql
 
-    time = Time.new(2012,12,17,9,23,45,'+09:00').to_i
+    time = event_time('2012-12-17 09:23:45 +0900')
     record = {'field1'=>'value1','field2'=>'value2','field3'=>'value3','field4'=>'value4'}
-    d.emit(record, time)
-    d.expect_format ['test', time, ['20121217-002345','test','value1','value2','value3','value4']].to_msgpack
-    d.run
+    d.run(default_tag: 'test') do
+      d.feed(time, record)
+    end
+    assert_equal ['test', time, ['20121217-002345','test','value1','value2','value3','value4']].to_msgpack, d.formatted[0]
   end
 end
-

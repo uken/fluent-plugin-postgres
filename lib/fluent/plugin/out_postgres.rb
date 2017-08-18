@@ -1,8 +1,9 @@
-class Fluent::PostgresOutput < Fluent::BufferedOutput
+require 'fluent/plugin/output'
+
+class Fluent::Plugin::PostgresOutput < Fluent::Plugin::Output
   Fluent::Plugin.register_output('postgres', self)
 
-  include Fluent::SetTimeKeyMixin
-  include Fluent::SetTagKeyMixin
+  helpers :inject, :compat_parameters
 
   config_param :host, :string
   config_param :port, :integer, :default => nil
@@ -26,6 +27,7 @@ class Fluent::PostgresOutput < Fluent::BufferedOutput
 
   # We don't currently support mysql's analogous json format
   def configure(conf)
+    compat_parameters_convert(conf, :inject)
     super
 
     if @format == 'json'
@@ -52,7 +54,16 @@ class Fluent::PostgresOutput < Fluent::BufferedOutput
   end
 
   def format(tag, time, record)
+    record = inject_values_to_record(tag, time, record)
     [tag, time, @format_proc.call(tag, time, record)].to_msgpack
+  end
+
+  def multi_workers_ready?
+    true
+  end
+
+  def formatted_to_msgpack_binary?
+    true
   end
 
   def client
