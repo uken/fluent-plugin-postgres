@@ -21,10 +21,6 @@ class Fluent::Plugin::PostgresOutput < Fluent::Plugin::Output
 
   attr_accessor :handler
 
-  def initialize
-    super
-  end
-
   # We don't currently support mysql's analogous json format
   def configure(conf)
     compat_parameters_convert(conf, :inject)
