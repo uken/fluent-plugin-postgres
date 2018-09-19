@@ -57,6 +57,19 @@ key_names field1,field2,field3
     }
   end
 
+  def test_key_names_with_spaces
+    d = create_driver %[
+host database.local
+database foo
+username bar
+password mogera
+table baz
+key_names time, tag, field1, field2, field3, field4
+sql INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)
+    ]
+    assert_equal ["time", "tag", "field1", "field2", "field3", "field4"], d.instance.key_names
+  end
+
   def test_time_and_tag_key
     d = create_driver %[
 host database.local
