@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 Gem::Specification.new do |s|
   s.name          = 'fluent-plugin-postgres'
-  s.version       = '0.0.1'
+  s.version       = '0.0.2'
   s.authors       = ['TAGOMORI Satoshi', 'Diogo Terror', 'pitr']
   s.email         = ['team@uken.com']
   s.description   = %q{fluent plugin to insert on PostgreSQL}
