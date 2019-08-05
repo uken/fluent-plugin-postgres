@@ -9,7 +9,7 @@
 
 ## Changes from mysql:
 
-- We currently don't suppor json format
+- We currently don't support json format
 - You need to specify a SQL query
 - Placeholders are numbered (yeah, I know).
 
