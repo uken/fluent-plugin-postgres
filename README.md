@@ -84,17 +84,15 @@ The table name, required with *columns*, ignored with *sql*.
   <match output.with.tag.and.time.*>
     @type postgres
     ...
-    <extract>
-      include_time_key yes
-      ### default `time_format` is ISO-8601
-      # time_format %Y%m%d-%H%M%S
+    <inject>
+      time_type string
+      time_format "%Y-%m-%d %H:%M:%S.%L"
       ### default `time_key` is 'time'
       # time_key timekey
-
       include_tag_key yes
       ### default `tag_key` is 'tag'
       # tag_key tagkey
-    </extract>
+    </inject>
 
     key_names time,tag,field1,field2,field3,field4
     sql INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES ($1,$2,$3,$4,$5,$6)
