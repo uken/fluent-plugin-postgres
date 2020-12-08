@@ -7,89 +7,84 @@
   - `gem install fluent-plugin-postgres` or
   - `/usr/lib/fluent/ruby/bin/fluent-gem install fluent-plugin-postgres`
 
-## Changes from mysql:
+## About:
 
-- We currently don't support json format
-- You need to specify a SQL query
-- Placeholders are numbered (yeah, I know).
+This plugin is an adaptation of the MySQL plugin.
 
-Other than that, just bear in mind that it's Postgres SQL.
+- Does not currently support json format ( see [fluent-plugin-pgjson](https://github.com/fluent-plugins-nursery/fluent-plugin-pgjson))
+- Placeholders are numbered.
 
 ### Quick example
-
-    <match output.by.sql.*>
-      type postgres
-      host master.db.service.local
-      # port 3306 # default
-      database application_logs
-      username myuser
-      password mypass
-      key_names status,bytes,vhost,path,rhost,agent,referer
-      sql INSERT INTO accesslog (status,bytes,vhost,path,rhost,agent,referer) VALUES ($1,$2,$3,$4,$5,$6,$7)
+```
+  <match output.by.sql.*>
+    @type postgres
+    host master.db.service.local
+    # port 5432 # default
+    database application_logs
+    username myuser
+    password mypass
+    key_names status,bytes,vhost,path,rhost,agent,referer
+    sql INSERT INTO accesslog (status,bytes,vhost,path,rhost,agent,referer) VALUES ($1,$2,$3,$4,$5,$6,$7)
+    <buffer>
       flush_intervals 5s
-    </match>
-
-
-
-## Component
-
-### PostgresOutput
-
-Plugin to store Postgres tables over SQL, to each columns per values, or to single column as json.
+    </buffer>
+  </match>
+```
 
 ## Configuration
 
-### MysqlOutput
+### Option Parameters
 
-MysqlOutput needs MySQL server's host/port/database/username/password, and INSERT format as SQL, or as table name and columns.
+#### Connection Parameters
 
-    <match output.by.sql.*>
-      type mysql
-      host master.db.service.local
-      # port 3306 # default
-      database application_logs
-      username myuser
-      password mypass
-      key_names status,bytes,vhost,path,rhost,agent,referer
-      sql INSERT INTO accesslog (status,bytes,vhost,path,rhost,agent,referer) VALUES (?,?,?,?,?,?,?)
-      flush_intervals 5s
-    </match>
+* host
+* port
+* database
+* username
+* password
 
-    <match output.by.names.*>
-      type mysql
-      host master.db.service.local
-      database application_logs
-      username myuser
-      password mypass
-      key_names status,bytes,vhost,path,rhost,agent,referer
-      table accesslog
-      # 'columns' names order must be same with 'key_names'
-      columns status,bytes,vhost,path,rhost,agent,referer
-      flush_intervals 5s
-    </match>
+The standard information needed to connect to the database as for any SQL application. Port is defaulted to 5432.
 
-Or, insert json into single column.
+#### key_names
 
-    <match output.as.json.*>
-      type mysql
-      host master.db.service.local
-      database application_logs
-      username root
-      table accesslog
-      columns jsondata
-      format json
-      flush_intervals 5s
-    </match>
+A comma seperated list of the key names from the Fluentd record that will be written to the database.
 
-To include time/tag into output, use `include_time_key` and `include_tag_key`, like this:
+The *key_names* do not need to match the field names of your database, but the order does need to match. Each key will be replaced in the insert values by the corresponding numbered placeholder ($1,$2...).
 
-    <match output.with.tag.and.time.*>
-      type mysql
-      host my.mysql.local
-      database anydatabase
-      username yourusername
-      password secret
+#### sql
 
+A SQL query to insert the record. This is a standard insert query. The Postgres numbered place holder format is required. It is required to provide either a query or *table* and *columns* parameters, in which case this plugin will generate the insert query for you.
+
+For simple inserts it is easier to use *table* and *columns*, sql will permit use of a function or custom sql.
+
+An exception will be raised if both *columns* and *sql* are provided.
+
+#### columns
+
+By providing a comma seperated list of *columns* and *table* the plugin will generate an insert query for *sql*.
+
+#### table
+
+The table name, required with *columns*, ignored with *sql*.
+
+## More Examples
+
+```
+
+  <match output.by.names.*>
+    @type postgres
+    ...
+    table accesslog
+    key_names status,bytes,vhost,path,rhost,agent,referer
+    # 'columns' names order must be same with 'key_names'
+    columns status,bytes,vhost,path,rhost,agent,referer
+    ...
+  </match>
+
+  <match output.with.tag.and.time.*>
+    @type postgres
+    ...
+    <extract>
       include_time_key yes
       ### default `time_format` is ISO-8601
       # time_format %Y%m%d-%H%M%S
@@ -99,41 +94,29 @@ To include time/tag into output, use `include_time_key` and `include_tag_key`, l
       include_tag_key yes
       ### default `tag_key` is 'tag'
       # tag_key tagkey
+    </extract>
 
-      table anydata
-      key_names time,tag,field1,field2,field3,field4
-      sql INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES (?,?,?,?,?,?)
-    </match>
+    key_names time,tag,field1,field2,field3,field4
+    sql INSERT INTO baz (coltime,coltag,col1,col2,col3,col4) VALUES ($1,$2,$3,$4,$5,$6)
+    ...
+  </match>
+```
 
-Or, for json:
+## Troubleshooting
 
-    <match output.with.tag.and.time.as.json.*>
-      type mysql
-      host database.local
-      database foo
-      username root
+The Default output level of fluentd will not display important errors generated from this plugin. Use the -v or -vv flags to see them.
 
-      include_time_key yes
-      utc   # with UTC timezome output (default: localtime)
-      time_format %Y%m%d-%H%M%S
-      time_key timeattr
-
-      include_tag_key yes
-      tag_key tagattr
-      table accesslog
-      columns jsondata
-      format json
-    </match>
-    #=> inserted json data into column 'jsondata' with addtional attribute 'timeattr' and 'tagattr'
+The --dry-run flag will attempt to parse the config file without starting fluentd.
 
 ## TODO
 
+* implement json support
 * implement 'tag_mapped'
-  * dynamic tag based table selection
+* dynamic tag based table selection
 
 ## Copyright
 
 * Copyright
-  * Copyright 2013 Uken Games
+  * Copyright 2013-2020 Uken Games
 * License
   * Apache License, Version 2.0

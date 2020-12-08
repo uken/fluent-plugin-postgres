@@ -7,7 +7,7 @@ class Fluent::Plugin::PostgresOutput < Fluent::Plugin::Output
   helpers :inject, :compat_parameters
 
   config_param :host, :string
-  config_param :port, :integer, :default => nil
+  config_param :port, :integer, :default => 5432
   config_param :database, :string
   config_param :username, :string
   config_param :password, :string, :default => ''
@@ -17,6 +17,7 @@ class Fluent::Plugin::PostgresOutput < Fluent::Plugin::Output
   config_param :table, :string, :default => nil
   config_param :columns, :string, :default => nil
 
+# Currently unimplimented
   config_param :format, :string, :default => "raw" # or json
 
   attr_accessor :handler
@@ -34,10 +35,20 @@ class Fluent::Plugin::PostgresOutput < Fluent::Plugin::Output
     end
 
     if @columns.nil? and @sql.nil?
-      raise Fluent::ConfigError, "columns or sql MUST be specified, but missing"
+      raise Fluent::ConfigError, "postgres plugin -- columns or sql MUST be specified, but missing"
     end
     if @columns and @sql
-      raise Fluent::ConfigError, "both of columns and sql are specified, but specify one of them"
+      raise Fluent::ConfigError, "postgres plugin -- both of columns and sql are specified, but specify one of them"
+    end
+    if @columns
+      unless @table
+        raise Fluent::ConfigError, "postgres plugin -- columns is specified but table is missing"
+      end
+      placeholders = []
+      for i in 1..@columns.split(',').count
+        placeholders.push("$#{i}")
+      end
+      @sql = "INSERT INTO #{@table} (#{@columns}) VALUES (#{placeholders.join(',')})"
     end
   end
 
